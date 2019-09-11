@@ -1,8 +1,22 @@
 ---
 local_release_dir: /tmp/releases
+download_cache_dir: /tmp/kubespray_cache
+
+# do not delete remote cache files after using them
+# NOTE: Setting this parameter to TRUE is only really useful when developing kubespray
+download_keep_remote_cache: false
+
+# Only useful when download_run_once is false: Localy cached files and images are
+# uploaded to kubernetes nodes. Also, images downloaded on those nodes are copied
+# back to the ansible runner's cache, if they are not yet preset.
+download_force_cache: false
 
 # Used to only evaluate vars from download role
 skip_downloads: false
+
+# Optionally skip kubeadm images download
+skip_kubeadm_images: false
+kubeadm_images: {}
 
 # if this is set to true will only download files once. Doesn't work
 # on Container Linux by CoreOS unless the download_localhost is true and localhost
@@ -268,6 +282,9 @@ addon_resizer_image_tag: "{{ addon_resizer_version }}"
 
 dashboard_image_repo: "gcr.io/google_containers/kubernetes-dashboard-{{ image_arch }}"
 dashboard_image_tag: "v1.10.1"
+
+image_pull_command: "{{ docker_bin_dir }}/docker pull"
+image_info_command: "{{ docker_bin_dir }}/docker images -q | xargs {{ docker_bin_dir }}/docker inspect -f \"{{ '{{' }} if .RepoTags {{ '}}' }}{{ '{{' }} (index .RepoTags 0) {{ '}}' }}{{ '{{' }} end {{ '}}' }}{{ '{{' }} if .RepoDigests {{ '}}' }},{{ '{{' }} (index .RepoDigests 0) {{ '}}' }}{{ '{{' }} end {{ '}}' }}\" | tr '\n' ','"
 
 downloads:
   netcheck_server:
